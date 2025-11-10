@@ -1,30 +1,33 @@
 name: notify-branch-created
 
 on:
-    create:
+  create:
 
 jobs:
-    slack-notify:
-        runs-on: ubuntu-latest
+  slack-notify:
+    runs-on: ubuntu-latest
 
-        steps:
-            - name: Set Slack message for branch create
-                if: ${{ github.ref_type == 'branch' }}
-                run: |
-                    REPO="${GITHUB_REPOSITORY}"
-                    BRANCH="${GITHUB_REF_NAME}"
-                    ACTOR="${GITHUB_ACTOR}"
+    steps:
+      - name: Set Slack message for branch create
+        if: ${{ github.ref_type == 'branch' }}
+        run: |
+          REPO="${GITHUB_REPOSITORY}"
+          BRANCH="${GITHUB_REF_NAME}"
+          ACTOR="${GITHUB_ACTOR}"
 
-                    MESSAGE="[브런치 생성] $ACTOR님이 $REPO에서 $BRANCH를 생성했습니다"
+          MESSAGE="[브런치 생성] ${ACTOR}님이 ${REPO}에서 ${BRANCH}를 생성했습니다"
 
-                    echo "MESSAGE<<EOF" >>$GITHUB_ENV
-                    echo "$MESSAGE" >> >$GITHUB_ENV
-                    echo "EOF" >> $GITHUB_ENV
-            - name: Send Slack message
-                if: env.MESSAGE !=''
-                run: |
-                    echo "Send to Slack: $MESSAGE"
+          {
+            echo "MESSAGE<<EOF"
+            echo "${MESSAGE}"
+            echo "EOF"
+          } >> $GITHUB_ENV
 
-                    curl -X POST -H 'Content-type: application/json' \
-                    --data "{"text":"${MESSAGE}"}" \
-                    ${{ secrets.SLACK_WEBHOOK_URL }}
+      - name: Send Slack message
+        if: ${{ env.MESSAGE != '' }}
+        run: |
+          echo "Send to Slack: ${MESSAGE}"
+
+          curl -X POST -H 'Content-type: application/json' \
+          --data "{\"text\":\"${MESSAGE}\"}" \
+          ${{ secrets.SLACK_WEBHOOK_URL }}
